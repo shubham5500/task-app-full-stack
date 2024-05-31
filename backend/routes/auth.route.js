@@ -11,7 +11,7 @@ const {
   comparePassword,
 } = require("../models/user.model");
 
-authRoute.get("/register", async (req, res, next) => {
+authRoute.post("/register", async (req, res, next) => {
   const { name, username, email, password } = req.body;
   const { error, value } = validateUser(req.body);
   if (error) {
@@ -57,7 +57,7 @@ authRoute.post("/login", async (req, res) => {
       { data: user.id },
       config.get("credentials.token_secret"),
       {
-        expiresIn: "10s",
+        expiresIn: "1w",
       }
     );
     const refreshToken = jwt.sign(
@@ -67,6 +67,14 @@ authRoute.post("/login", async (req, res) => {
         expiresIn: "1w",
       }
     );
+    res.cookie("token", token, {
+      maxAge: 4000000,
+      //   sameSite: process.env.NODE_ENV === "development" ? true : "none",
+      //   secure: process.env.NODE_ENV === "development" ? false : true,
+      sameSite: true,
+      secure: false,
+    });
+
     res.cookie("refreshToken", refreshToken, {
       maxAge: 4000000,
       //   sameSite: process.env.NODE_ENV === "development" ? true : "none",
