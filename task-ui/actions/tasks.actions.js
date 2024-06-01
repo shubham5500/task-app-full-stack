@@ -1,7 +1,8 @@
-const { customFetch } = require("@/utils/helper");
+
+import {customFetch} from '../utils/helper'
 
 export async function updateTaskById(taskId, data) {
-    return customFetch(`/tasks/${taskId}`, 'PATCH', data);
+    return customFetch(`/tasks/${taskId}`, 'PATCH', data,);
 }
 
 export async function getCardDetail(taskId) {
@@ -12,3 +13,15 @@ export async function getCardDetail(taskId) {
 export async function postCommentOnTask(taskId, commentData) {
     return customFetch(`/tasks/${taskId}/comment`, 'POST', commentData)
 }
+
+export async function getTask() {
+    const token = cookies().get('token').value;
+    return fetch(`${BASE_URL}/tasks`, {
+      method: "GET",
+      headers: {
+        "auth-token": token,
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => res);
+  }

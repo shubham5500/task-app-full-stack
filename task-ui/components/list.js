@@ -9,7 +9,6 @@ const List = ({ listItem, listKey, addTask }) => {
   const router = useRouter();
   const [input, setInput] = useState("");
   const [taskDetailId, setTaskDetailId] = useState(null);
-  console.log({ listItem, listKey });
 
   const onOpenDetail = (id) => {
     setTaskDetailId(id);

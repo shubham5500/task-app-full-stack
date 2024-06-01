@@ -1,11 +1,12 @@
+import { LocalStorageService } from "@/services/localStorage.service";
+
 export const BASE_URL = "http://localhost:3000";
 const ISSERVER = typeof window === "undefined";
 
 export function getHeaders(method = "GET") {
-  let token = '';
+  let token;
   if (!ISSERVER) {
-    // Access localStorage
-    token = localStorage.getItem("myToken") || "";
+    token = LocalStorageService.getItem('token');
   }
   return {
     method,
@@ -17,17 +18,17 @@ export function getHeaders(method = "GET") {
   };
 }
 
-export function customFetch(url, method = "GET", data = {}) {
+export async function customFetch(url, method = "GET", data = {}) {
   const obj = {};
   if (method !== "GET") {
     obj["body"] = JSON.stringify(data);
   }
-  return fetch(`${BASE_URL}${url}`, {
+  const res = await fetch(`${BASE_URL}${url}`, {
     ...getHeaders(method),
     ...obj,
-  })
-    .then((res) => res.json())
-    .then((res) => res);
+  });
+  const res_1 = await res.json();
+  return res_1;
 }
 
 

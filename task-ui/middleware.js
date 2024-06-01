@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 export function middleware(request) {
   const token = request.cookies.get("token");
   // If no token, redirect to the login page
+  // console.log({token});
   if (!token) {
     // redirect('/auth')
     return NextResponse.redirect(new URL("/auth", request.url));
@@ -11,5 +12,5 @@ export function middleware(request) {
   return NextResponse.next();
 }
 export const config = {
-  matcher: ["/board"],
+  matcher: ["/board", '/board/:id*'],
 };
