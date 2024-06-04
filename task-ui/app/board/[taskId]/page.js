@@ -1,5 +1,5 @@
 
-import CardDetail from "@/components/taskDetailCard";
+import CardDetail from "@/components/TaskDetailCard";
 import React from "react";
 
 

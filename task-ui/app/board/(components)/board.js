@@ -3,8 +3,9 @@ import React, { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { BASE_URL, customFetch, getHeaders } from "@/utils/helper";
 
-import List from "@/components/list";
+import List from "@/components/List";
 import { isEmpty } from "lodash";
+import Button from "@/components/UI/Button";
 
 function normalizeList(listData = []) {
   const obj = {};
@@ -72,6 +73,22 @@ const Board = () => {
     setLists(normalizeList(results));
   };
 
+  const addList = async () => {
+    const {result} = await customFetch(`/lists/create`, 'POST', {
+      boardId: 1,
+      title: 'new List'
+    })
+    setLists({
+      ...lists,
+      [result.id]: {
+        id: result.id,
+        title: result.title,
+        tasks: []
+      }
+    })
+    console.log({result});
+  }
+
   const onDragEnd = async (result) => {
     const { source, destination } = result;
 
@@ -80,9 +97,14 @@ const Board = () => {
       return;
     }
 
-    if (source.index === destination.index) {
+    // if the position of the task is same as before then do nothing.
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    ) {
       return;
     }
+
     const items = move(source, destination);
 
     const payload = getTaskMovePayload(items);
@@ -90,25 +112,6 @@ const Board = () => {
     setLists({
       ...normalizeList(updatedTaks),
     });
-    // const reorder = (listId, startIndex, endIndex) => {
-    //   const listsCopy = { ...lists }; // create a shallow copy of the state
-    //   const [removed] = listsCopy[listId].splice(startIndex, 1);
-    //   listsCopy[listId].splice(endIndex, 0, removed);
-    //   return listsCopy;
-    // };
-
-    // const items = reorder(
-    //   source.droppableId,
-    //   source.index,
-    //   destination.index
-    // );
-    // const result = move(source, destination);
-
-    // const payload = getTaskMovePayload(result);
-    // const updatedTaks = await callMoveApi(payload);
-    // setLists({
-    //   ...normalizeList(updatedTaks),
-    // });
   };
 
   const addTask = async (listKey, payload) => {
@@ -117,7 +120,7 @@ const Board = () => {
       ...getHeaders("POST"),
       body: JSON.stringify({
         title: title,
-        description: "task description 2",
+        description: "",
         status: "pending",
         priority: "medium",
         createdBy: 3,
@@ -143,6 +146,14 @@ const Board = () => {
             addTask={addTask}
           />
         ))}
+        <div className="flex flex-col mt-3  ">
+          <button
+            onClick={addList}
+            className="w-[300px] p-4 bg-slate-100 border-dashed border-blue-500 border-2	 rounded text-black"
+          >
+            Add List
+          </button>
+        </div>
       </DragDropContext>
     </div>
   );

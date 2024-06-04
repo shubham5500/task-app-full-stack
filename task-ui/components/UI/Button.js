@@ -1,11 +1,21 @@
 import React from "react";
 
-const Button = ({ children, btnType, extraClasses = '', onClickHandler, ...props }) => {
+const Button = ({
+  children,
+  btnType,
+  extraClasses = "",
+  onClickHandler,
+  ...props
+}) => {
   const type = {
     primary: "bg-white text-gray-900",
   };
   return (
-    <button className={`rounded ${type[btnType]} `.concat(extraClasses)} onClick={onClickHandler}>
+    <button
+      className={`rounded ${type[btnType]} `.concat(extraClasses)}
+      onClick={onClickHandler}
+      {...props}
+    >
       {children}
     </button>
   );

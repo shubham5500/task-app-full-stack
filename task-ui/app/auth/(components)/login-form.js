@@ -10,11 +10,12 @@ export const LoginForm = () => {
   const router = useRouter();
   async function login(e) {
     try {
-      const { token } = await customFetch("/auth/login", "POST", {
+      const { token, ...obj } = await customFetch("/auth/login", "POST", {
         email,
         password,
       });
       LocalStorageService.setItem("token", token);
+      LocalStorageService.setItem('user', obj);
 
       router.push("/board");
     } catch (error) {}

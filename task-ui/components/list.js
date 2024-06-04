@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { Droppable } from "react-beautiful-dnd";
-import TaskCard from "./taskCard";
+import TaskCard from "./TaskCard";
 import { useRouter } from "next/navigation";
 import Button from "./UI/Button";
 
@@ -20,7 +20,7 @@ const List = ({ listItem, listKey, addTask }) => {
       <Droppable droppableId={`${listKey}`}>
         {(provided, snapshot) => (
           <div className="bg-blue-500 rounded m-3">
-            <div ref={provided.innerRef} className={""}>
+            <div ref={provided.innerRef} className={"pt-1"}>
               {listItem?.map((taskItem, i) => (
                 <Draggable
                   key={taskItem.id}

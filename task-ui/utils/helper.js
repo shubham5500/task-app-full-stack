@@ -4,14 +4,9 @@ export const BASE_URL = "http://localhost:3000";
 const ISSERVER = typeof window === "undefined";
 
 export function getHeaders(method = "GET") {
-  let token;
-  if (!ISSERVER) {
-    token = LocalStorageService.getItem('token');
-  }
   return {
     method,
     headers: {
-      "auth-token": token,
       "Content-Type": "application/json",
     },
     credentials: "include",
