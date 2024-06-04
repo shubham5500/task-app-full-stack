@@ -22,8 +22,8 @@ const { validateComment } = require("../models/comment.model");
 
 const taskRoute = express.Router();
 const s3 = new AWS.S3({
-  // accessKeyId: config.get("credentials.aws_access_key_id"),
-  // secretAccessKey: config.get("credentials.secret_access_key"),
+  accessKeyId: config.get("credentials.aws_access_key_id"),
+  secretAccessKey: config.get("credentials.secret_access_key"),
 });
 const upload = multer({
   storage: multerS3({
