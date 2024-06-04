@@ -1,4 +1,5 @@
 const express = require("express");
+
 const authRoute = express.Router();
 const jwt = require("jsonwebtoken");
 const config = require("config");
@@ -10,6 +11,7 @@ const {
   hashPassword,
   comparePassword,
 } = require("../models/user.model");
+const { authorizedUser } = require("../middleware/auth.middleware");
 
 authRoute.post("/register", async (req, res, next) => {
   const { name, username, email, password } = req.body;
@@ -26,6 +28,13 @@ authRoute.post("/register", async (req, res, next) => {
   });
   const resObj = omit(user, "password");
   return res.status(200).send(resObj);
+});
+
+authRoute.get("/logout", authorizedUser, (req, res) => {
+  const { id } = req.user;
+  res.clearCookie("token");
+  res.clearCookie("refreshToken");
+  res.status(200).json({ message: "Logged out" });
 });
 
 authRoute.post("/login", async (req, res) => {
@@ -71,16 +80,16 @@ authRoute.post("/login", async (req, res) => {
       maxAge: 4000000,
       //   sameSite: process.env.NODE_ENV === "development" ? true : "none",
       //   secure: process.env.NODE_ENV === "development" ? false : true,
-      sameSite: true,
-      secure: false,
+      sameSite: 'none',
+      secure: true,
     });
 
     res.cookie("refreshToken", refreshToken, {
       maxAge: 4000000,
       //   sameSite: process.env.NODE_ENV === "development" ? true : "none",
       //   secure: process.env.NODE_ENV === "development" ? false : true,
-      sameSite: true,
-      secure: false,
+      sameSite: 'none',
+      secure: true,
     });
     return res.status(200).send({
       ...userObj,
@@ -95,7 +104,7 @@ authRoute.get("/refresh-token", async (req, res) => {
   // reading refrsh token from the cookies, if its available then
   // we'll verify the rToken and again regenerate both token and refeshToken again and
   // set the refresh token again in the cookie and send the new token back.
-  
+
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) {
     throw new ErrorHandler(401, "Refresh token missing");

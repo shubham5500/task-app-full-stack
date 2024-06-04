@@ -13,9 +13,9 @@ listRoute.post("/create", async (req, res) => {
     throw new ErrorHandler(400, validatedList.error);
   }
 
-  await createList({ title, boardId });
+  const result = await createList({ title, boardId });
 
-  return res.status(200).send("List created successfully!");
+  return res.status(200).send({message: "List created successfully!", result});
 });
 
 module.exports = {

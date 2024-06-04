@@ -8,6 +8,17 @@ const validateBoard = (list) => {
     return schema.validate(list);
 }
 
+
+const validateAddUserToBoard = (payload) => {
+    const schema = Joi.object({
+        userId: Joi.number().required(),
+        boardId: Joi.number().required(),
+    })
+
+    return schema.validate(payload);
+}
+
 module.exports = {
-    validateBoard
+    validateBoard,
+    validateAddUserToBoard,
 }

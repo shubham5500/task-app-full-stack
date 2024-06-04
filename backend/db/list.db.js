@@ -1,7 +1,7 @@
 const { db } = require("./connection");
 
 const createList = async ({boardId, title}) => {
-  return await db.query("insert into lists(title, board_id) values($1, $2)", [title, boardId]);
+  return await db.one("insert into lists(title, board_id) values($1, $2) returning *", [title, boardId]);
 };
 
 module.exports = {

@@ -9,6 +9,7 @@ const morgan = require("morgan");
 const path = require("path");
 
 const cookieParser = require("cookie-parser");
+const session = require("express-session");
 require("express-async-errors");
 const cors = require("cors");
 const userRoute = require("./routes/user.route");
@@ -28,11 +29,14 @@ const corsOptions = {
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 app.use(cors(corsOptions));
+app.use(session({
+  secret: 'my_secret',
+}))
 app.use(cookieParser()); // This will parse cookies from incoming requests
 app.use(morgan('dev'))
 app.use("/auth", authRoute);
 app.use("/users", authorizedUser, userRoute);
-app.use("/list", authorizedUser, listRoute);
+app.use("/lists", authorizedUser, listRoute);
 app.use("/board", authorizedUser, boardRoute);
 app.use("/tasks", authorizedUser, taskRoute);
 app.use(handlerError);

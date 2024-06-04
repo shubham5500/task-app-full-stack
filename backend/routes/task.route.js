@@ -40,8 +40,10 @@ const upload = multer({
 });
 
 // Add routes
-taskRoute.get("/", async (req, res) => {
-  const tasks = await getAllTask();
+taskRoute.post("/", async (req, res) => {
+
+  const {boardId} = req.body;
+  const tasks = await getAllTask(boardId);
   return res.status(200).send(tasks);
 });
 
@@ -117,7 +119,7 @@ taskRoute.patch("/:taskId", async (req, res) => {
 taskRoute.post("/:taskId/comment", async (req, res) => {
   const body = req.body;
   const { taskId } = req.params;
-  // const { userId } = req.user; // todo: remove the OR sign
+  const { id: userId } = req.user; // todo: remove the OR sign
   const { text } = body;
   const validateCommentObj = validateComment({ text });
 
@@ -125,23 +127,15 @@ taskRoute.post("/:taskId/comment", async (req, res) => {
     throw new ErrorHandler(403, validateCommentObj.error);
   }
 
-  const result = await commentOnTask(taskId, 3, { text });
+  const result = await commentOnTask(taskId, userId, { text });
   return res.status(200).send({ message: "Create Successfully!", result });
 });
 
-taskRoute.put("/move", async (req, res) => {
-  /*
-     {
-        id: index,
-        id: index,
-        id: index,
-        id: index,
-    }
-  */
-
+taskRoute.put("/:boardId/move", async (req, res) => {
+  const {boardId} = req.params;
   const body = req.body;
   await moveTask(body);
-  const tasks = await getAllTask();
+  const tasks = await getAllTask(boardId);
   return res.status(200).send(tasks);
 });
 

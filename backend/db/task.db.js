@@ -9,6 +9,7 @@ const createTask = async ({
   assignedTo,
   listId,
   fileUrl,
+  boardId,
 }) => {
   return db.tx(async (t) => {
     const tasks = await getAllTaskByListId(listId, t);
@@ -39,6 +40,7 @@ const createTask = async ({
         assignedTo,
         position,
         listId,
+        boardId,
       ]
     );
     let taskFileRes = {};
@@ -180,29 +182,67 @@ async function deleteTask(taskId) {
   return await db.none("delete tasks where id = $1", [taskId]);
 }
 
-async function getAllTask() {
-  return await db.many(`SELECT 
-  l.id AS list_id,
-  l.title AS list_title,
-  COALESCE(json_agg(
-      json_build_object(
-          'id', t.id,
-          'title', t.title,
-          'description', t.description,
-          'status', t.status,
-          'priority', t.priority,
-          'due_date', t.due_date,
-          'created_by', t.created_by,
-          'assigned_to', t.assigned_to,
-          'created_at', t.created_at,
-          'position', t.position,
-          'list_id', t.list_id
-      )
-  ) FILTER (WHERE t.id IS NOT NULL), '[]') AS tasks
-FROM tasks t
-RIGHT JOIN lists l ON t.list_id = l.id
-GROUP BY l.id, l.title;
-`);
+async function getAllTask(boardId) {
+  return await db.one(
+    `
+    WITH task_comments AS (
+      SELECT
+          t.id AS task_id,
+          COUNT(c.id) AS comment_count
+      FROM tasks t
+      LEFT JOIN comments c ON c.task_id = t.id
+      GROUP BY t.id
+  ),
+  tasks_with_comments AS (
+      SELECT
+          t.id,
+          t.title,
+          t.description,
+          t.status,
+          t.priority,
+          t.due_date,
+          t.created_by,
+          t.assigned_to,
+          t.created_at,
+          t.position,
+          t.list_id,
+          tc.comment_count
+      FROM tasks t
+      LEFT JOIN task_comments tc ON t.id = tc.task_id
+  ),
+  lists_with_tasks AS (
+      SELECT
+          l.id AS list_id,
+          l.title AS list_title,
+          COALESCE(json_agg(
+              json_build_object(
+                  'id', t.id,
+                  'title', t.title,
+                  'description', t.description,
+                  'status', t.status,
+                  'priority', t.priority,
+                  'due_date', t.due_date,
+                  'created_by', t.created_by,
+                  'assigned_to', t.assigned_to,
+                  'created_at', t.created_at,
+                  'position', t.position,
+                  'list_id', t.list_id,
+                  'comments', t.comment_count
+              )
+          ) FILTER (WHERE t.id IS NOT NULL), '[]') AS tasks
+      FROM lists l
+      LEFT JOIN tasks_with_comments t ON t.list_id = l.id
+      WHERE l.board_id = $1  -- Ensure this matches the type of board_id in your database
+      GROUP BY l.id, l.title
+  )
+  
+  SELECT
+      COALESCE(json_agg(lists_with_tasks), '[]') AS result
+  FROM lists_with_tasks;
+  
+`,
+    [boardId]
+  );
 }
 
 async function commentOnTask(taskId, userId, commentData) {
