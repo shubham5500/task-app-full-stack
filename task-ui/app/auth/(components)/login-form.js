@@ -3,6 +3,7 @@ import { customFetch } from "@/utils/helper";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LocalStorageService } from "../../../services/localStorage.service";
+import { toast } from "react-toastify";
 
 export const LoginForm = () => {
   const [email, setEmail] = useState("shubham.123@gmail.com");
@@ -10,15 +11,19 @@ export const LoginForm = () => {
   const router = useRouter();
   async function login(e) {
     try {
-      const { token, ...obj } = await customFetch("/auth/login", "POST", {
+      const result = await customFetch("/auth/login", "POST", {
         email,
         password,
       });
-      LocalStorageService.setItem("token", token);
-      LocalStorageService.setItem('user', obj);
-
+      if (result && (result.status === 'error')) {
+        toast(result?.message);
+        return;
+      }
+      
       router.push("/board");
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (

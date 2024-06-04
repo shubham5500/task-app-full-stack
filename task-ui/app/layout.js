@@ -16,11 +16,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Sidebar />
-        <div className="flex flex-col w-[calc(100%-200px)]">
-          <Navbar />
-          <div className="overflow-y-auto">{children}</div>
-          {/* <ToastContainer /> */}
+        <div className="flex w-full">
+          <Sidebar />
+          <div className="flex flex-col w-[calc(100%-200px)]">
+            <Navbar />
+            <div className="overflow-y-auto">{children}</div>
+            <ToastContainer />
+          </div>
         </div>
       </body>
     </html>

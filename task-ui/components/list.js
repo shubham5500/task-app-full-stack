@@ -12,7 +12,7 @@ const List = ({ listItem, listKey, addTask }) => {
 
   const onOpenDetail = (id) => {
     setTaskDetailId(id);
-    router.push(`/board/${id}`, undefined, { shallow: true });
+    router.push(`/tasks/${id}`);
   };
   return (
     <div className="w-[300px]">
@@ -21,7 +21,7 @@ const List = ({ listItem, listKey, addTask }) => {
         {(provided, snapshot) => (
           <div className="bg-blue-500 rounded m-3">
             <div ref={provided.innerRef} className={"pt-1"}>
-              {listItem?.map((taskItem, i) => (
+              {listItem && listItem.length > 0 && listItem?.map((taskItem, i) => (
                 <Draggable
                   key={taskItem.id}
                   draggableId={taskItem.id.toString()}
