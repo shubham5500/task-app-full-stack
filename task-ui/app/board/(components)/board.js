@@ -58,10 +58,6 @@ const Board = () => {
       const { result } = await customFetch("/tasks", "POST", {
         boardId,
       });
-      console.log({
-        ...lists,
-        ...normalizeList(result),
-      });
       setLists({
         ...lists,
         ...normalizeList(result),
@@ -89,7 +85,6 @@ const Board = () => {
         tasks: [],
       },
     });
-    console.log({ result });
   };
 
   const onDragEnd = async (result) => {
@@ -120,23 +115,24 @@ const Board = () => {
 
   const addTask = async (listKey, payload) => {
     const { title } = payload;
-    await fetch(`${BASE_URL}/tasks/create`, {
-      ...getHeaders("POST"),
-      body: JSON.stringify({
-        title: title,
-        description: "",
-        status: "pending",
-        priority: "medium",
-        createdBy: 3,
-        assignedTo: 23,
-        listId: listKey,
-      }),
+
+    const result = await customFetch(`/tasks/create`, "POST", {
+      title: title,
+      description: "",
+      status: "pending",
+      priority: "medium",
+      listId: parseInt(listKey),
     });
-    callGetAllTasks();
+    console.log({ result, lists });
+    // callGetAllTasks();
+    setLists({
+      ...lists,
+      [listKey]: [...lists[listKey], {...result}],
+    })
   };
 
   if (loading) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   if (isEmpty(lists)) {
@@ -157,6 +153,7 @@ const Board = () => {
       <DragDropContext onDragEnd={onDragEnd}>
         {Object.keys(lists).map((key) => (
           <List
+            boardId={boardId}
             key={key}
             listItem={lists[key]}
             listKey={key}

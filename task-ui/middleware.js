@@ -12,5 +12,5 @@ export function middleware(request) {
   return NextResponse.next();
 }
 export const config = {
-  matcher: ["/board", '/board/:id*'],
+  matcher: ["/board", '/tasks','/tasks/:id*'],
 };

@@ -1,19 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { Droppable } from "react-beautiful-dnd";
 import TaskCard from "./TaskCard";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import Button from "./UI/Button";
 
-const List = ({ listItem, listKey, addTask }) => {
-  const router = useRouter();
+const List = ({ listItem, listKey, addTask, boardId }) => {
   const [input, setInput] = useState("");
-  const [taskDetailId, setTaskDetailId] = useState(null);
+  useEffect(() => {
+    console.log({listItem});
+  }, [listItem])
 
-  const onOpenDetail = (id) => {
-    setTaskDetailId(id);
-    router.push(`/tasks/${id}`);
-  };
   return (
     <div className="w-[300px]">
       {/* {listItem[listKey].title} */}
@@ -23,8 +20,8 @@ const List = ({ listItem, listKey, addTask }) => {
             <div ref={provided.innerRef} className={"pt-1"}>
               {listItem && listItem.length > 0 && listItem?.map((taskItem, i) => (
                 <Draggable
-                  key={taskItem.id}
-                  draggableId={taskItem.id.toString()}
+                  key={taskItem?.id}
+                  draggableId={taskItem?.id.toString()}
                   index={i}
                 >
                   {(provided, snapshot) => (
@@ -40,7 +37,6 @@ const List = ({ listItem, listKey, addTask }) => {
                     >
                       <TaskCard
                         taskData={taskItem}
-                        onTaskDetail={onOpenDetail}
                       />
                     </div>
                   )}

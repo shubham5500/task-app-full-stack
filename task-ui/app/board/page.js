@@ -10,7 +10,8 @@ export async function getBoards() {
   return fetch(`${BASE_URL}/board`, {
     method: "GET",
     headers: {
-      cookie: cookies(), // this cookies function gives the cookies from the incoming req i.e the client's browser req
+      cookie: cookies(), // this cookies function sends the cookies from the 
+                        // incoming req (client's browser) to the next server.
     },
     credentials: "include",
   })
@@ -19,7 +20,7 @@ export async function getBoards() {
 }
 
 export default async function BoardPage() {
-  const { boards } = await getBoards();
+const { boards = [] } = await getBoards();
   return (
     <div className="flex p-4 w-full flex-wrap gap-y-4">
       {boards.map((item) => (
@@ -33,7 +34,7 @@ export default async function BoardPage() {
             </div>
             <div className="p-4">
               <Link
-                href={`/board/${item.id}`}
+                href={`/board/${item.board_id}`}
                 className="text-sm text-blue-500 underline font-semibold"
               >
                 {item.title}

@@ -1,6 +1,6 @@
 "use client";
 import { isEmpty } from "lodash";
-import { getRandomClass } from "@/utils/helper";
+import { customFetch, getRandomClass } from "@/utils/helper";
 import { AttachmentIcon, LinkIcon } from "@/utils/icons";
 import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
@@ -14,20 +14,33 @@ import { useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import Input from "./UI/Input";
 import Modal from "./UI/Modal";
+import useUserDetail from "@/hooks/useUserDetail";
+import useUsers from "@/hooks/useUsers";
+import Button from "./UI/Button";
 
 const CardDetail = ({ data }) => {
   const fileInputRef = useRef(null);
   const [newComment, setNewComment] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [taskData, setTaskData] = useState(null);
+  const [assignedUser, setAssignedUser] = useState(taskData);
+  useEffect(() => {
+    setAssignedUser(taskData?.assignedTo)
+  }, [taskData?.assignedTo])
+
+  const { getUserDetail, user } = useUserDetail();
+
   const params = useParams();
+  const [boardId, taskId] = params["task-detail"];
+  const { users = [] } = useUsers(boardId);
 
   const getCardDetailApi = async () => {
     try {
-      const { taskId } = params;
       setLoading(true);
       const res = await getCardDetail(taskId);
       const normalisedData = normalizeTask(res);
+      await getUserDetail(normalisedData.createdBy);
       setTaskData(normalisedData);
     } catch (error) {
       toast(error?.message || "Something went wrong");
@@ -64,6 +77,18 @@ const CardDetail = ({ data }) => {
     fileInputRef.current.click();
   };
 
+  const assign = async () => {
+    console.log(assignedUser);
+    try {
+      const result = await customFetch(`/tasks/${taskData?.id}/assign`, "POST", {
+        assignToId: assignedUser,
+      });
+      toast("Assigned Successfully!");
+    } catch (error) {
+      toast(error.message)
+    }
+  };
+
   const backgroundColor = getRandomClass("bg");
 
   async function onSaveDescription() {
@@ -96,8 +121,32 @@ const CardDetail = ({ data }) => {
             <div className="mb-4">
               <h2 className="text-xl font-bold">{taskData?.title}</h2>
               <p className="text-gray-400">in list {taskData?.list?.title}</p>
+              {user && (
+                <p className="text-gray-400 text-xs">Created by: {user.name}</p>
+              )}
             </div>
-
+            <div className="mb-3">
+              <label className="text-sm">Assigned To</label>
+              <div className="flex">
+                <select
+                  className="bg-gray-700 p-2 w-full rounded-md"
+                  onChange={(e) => {
+                    setAssignedUser(e.target.value);
+                  }}
+                  value={assignedUser}
+                >
+                  {users.length > 0 && users.map((item) => (
+                    <option key={item?.id} value={item.user_id}>{item.name}</option>
+                  ))}
+                </select>
+                <Button
+                  className="px-3 bg-blue-600 rounded-md ml-1"
+                  onClickHandler={assign}
+                >
+                  Assign
+                </Button>
+              </div>
+            </div>
             <div className="mb-4">
               <h3 className="font-semibold mb-3">Description</h3>
               <textarea

@@ -31,7 +31,7 @@ const Navbar = ({ user }) => {
               <div className="absolute right-0 top-8 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                 <button
                   onClick={onLogout}
-                  className="block px-4 py-2 text-sm text-gray-700 w-full text-left hover:bg-gray-100"
+                  className="block px-4 py-2 text-sm text-gray-700 w-full text-left hover:bg-gray-100 pointer"
                 >
                   Logout
                 </button>

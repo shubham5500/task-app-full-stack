@@ -6,7 +6,7 @@ import { LocalStorageService } from "../../../services/localStorage.service";
 import { toast } from "react-toastify";
 
 export const LoginForm = () => {
-  const [email, setEmail] = useState("shubham.123@gmail.com");
+  const [email, setEmail] = useState("shubham@gmail.com");
   const [password, setPassword] = useState("123456");
   const router = useRouter();
   async function login(e) {
@@ -27,7 +27,7 @@ export const LoginForm = () => {
   }
 
   return (
-    <form className="space-y-4">
+    <div className="space-y-4">
       <div className="text-gray-900">
         <label className="block mb-2 text-sm font-medium text-gray-600">
           Email
@@ -59,7 +59,7 @@ export const LoginForm = () => {
       >
         Login
       </button>
-    </form>
+    </div>
   );
 };
 
