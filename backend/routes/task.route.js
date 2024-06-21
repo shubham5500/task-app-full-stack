@@ -17,13 +17,17 @@ const {
   getAllTask,
   moveTask,
   commentOnTask,
+  assignTaskToUser,
+  getAssignedTask,
 } = require("../db/task.db");
 const { validateComment } = require("../models/comment.model");
+const userRoute = require("./user.route");
+const { authorizedUser } = require("../middleware/auth.middleware");
 
 const taskRoute = express.Router();
 const s3 = new AWS.S3({
-  accessKeyId: config.get("credentials.aws_access_key_id"),
-  secretAccessKey: config.get("credentials.secret_access_key"),
+  // accessKeyId: config.get("credentials.aws_access_key_id"),
+  // secretAccessKey: config.get("credentials.secret_access_key"),
 });
 const upload = multer({
   storage: multerS3({
@@ -40,83 +44,146 @@ const upload = multer({
 });
 
 // Add routes
-taskRoute.post("/", async (req, res) => {
-
-  const {boardId} = req.body;
+taskRoute.post("/", authorizedUser, async (req, res) => {
+  const { boardId } = req.body;
   const tasks = await getAllTask(boardId);
   return res.status(200).send(tasks);
 });
 
-taskRoute.get("/:taskId", async (req, res) => {
-  const taskId = parseInt(req.params.taskId, 10);
-  const taskDetail = await getTaskDetailById(taskId);
-  res.status(200).send(taskDetail);
-});
+taskRoute.post(
+  "/create",
+  authorizedUser,
+  upload.single("taskFiles"),
+  async (req, res) => {
+    const file = req.file || {};
+    const body = req.body;
+    const {
+      title,
+      description,
+      status,
+      priority,
+      assignedTo,
+      listId,
+    } = body;
 
-taskRoute.post("/create", upload.single("taskFiles"), async (req, res) => {
-  const file = req.file || {};
-  const body = req.body;
-  const {
-    title,
-    description,
-    status,
-    priority,
-    createdBy,
-    assignedTo,
-    position,
-    listId,
-  } = body;
+    // description: "";
+    // listId: 25;
+    // priority: "medium";
+    // status: "pending";
+    // title: "hello";
 
-  const validatedTask = validateTask({
-    title,
-    description,
-    status,
-    priority,
-    createdBy,
-    assignedTo,
-    position,
-    listId,
-  });
-
-  if (!isEmpty(file)) {
-    const validtedTaskFile = validateTaskFile({
-      fileUrl: file.location,
-      uploadedBy: 1 || req.user.id,
+    const validatedTask = validateTask({
+      title,
+      description,
+      status,
+      priority,
+      assignedTo,
+      listId,
     });
 
-    if (validtedTaskFile.error) {
+    if (!isEmpty(file)) {
+      const validtedTaskFile = validateTaskFile({
+        fileUrl: file.location,
+        uploadedBy: 1 || req.user.id,
+      });
+
+      if (validtedTaskFile.error) {
+        throw new ErrorHandler(400, validatedTask.error);
+      }
+    }
+
+    if (validatedTask.error) {
       throw new ErrorHandler(400, validatedTask.error);
     }
-  }
 
-  if (validatedTask.error) {
-    throw new ErrorHandler(400, validatedTask.error);
+    const result = await createTask({
+      title,
+      description,
+      status,
+      priority,
+      assignedTo: assignedTo || req.user.id,
+      fileUrl: file.location,
+      createdBy: req.user.id,
+      listId,
+    });
+    
+    return res.status(200).send(result);
   }
+);
 
-  const result = await createTask({
-    title,
-    description,
-    status,
-    priority,
-    createdBy,
-    assignedTo,
-    position,
-    fileUrl: file.location,
-    listId,
+taskRoute.get("/assigned-task", authorizedUser, async (req, res, next) => {
+  const { id } = req.user;
+  try {
+    const result = await getAssignedTask(id);
+    if (!result) {
+      return res.status(203).send({ message: "No content found." });
+    }
+    return res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+taskRoute
+  .get("/:taskId", authorizedUser, async (req, res) => {
+    const taskId = parseInt(req.params.taskId, 10);
+    const taskDetail = await getTaskDetailById(taskId);
+    res.status(200).send(taskDetail);
+  })
+  .patch("/:taskId", authorizedUser, async (req, res) => {
+    // assigned_to_id
+    const taskId = parseInt(req.params.taskId);
+    const {
+      title,
+      description,
+      status,
+      priority,
+      assignedTo,
+      position,
+      listId,
+    } = body;
+
+    const validatedTask = validateTask({
+      title,
+      description,
+      status,
+      priority,
+      assignedTo,
+      position,
+      listId,
+    });
+
+    if (validatedTask.error) {
+      throw new ErrorHandler(400, validatedTask.error);
+    }
+
+    await updateTaskById(req.body, taskId);
+    return res.status(200).send(req.body);
+  })
+  .delete("/:taskId", authorizedUser, async (req, res) => {
+    const taskId = req.params.taskId;
+
+    await deleteTask(taskId);
+    return res.status(200).send("Deleted successfully!");
   });
 
-  return res.status(200).send(result);
+taskRoute.post("/:taskId/assign", authorizedUser, async (req, res, next) => {
+  const { assignToId } = req.body;
+  const { taskId } = req.params;
+
+  if (!assignToId) {
+    throw new ErrorHandler(400, "User id not found.");
+  }
+
+  try {
+    const result = await assignTaskToUser(taskId, assignToId);
+    return res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
 });
 
-taskRoute.patch("/:taskId", async (req, res) => {
-  // assigned_to_id
-  const taskId = parseInt(req.params.taskId);
-
-  await updateTaskById(req.body, taskId);
-  return res.status(200).send(req.body);
-});
-
-taskRoute.post("/:taskId/comment", async (req, res) => {
+taskRoute.post("/:taskId/comment", authorizedUser, async (req, res) => {
   const body = req.body;
   const { taskId } = req.params;
   const { id: userId } = req.user; // todo: remove the OR sign
@@ -132,18 +199,11 @@ taskRoute.post("/:taskId/comment", async (req, res) => {
 });
 
 taskRoute.put("/:boardId/move", async (req, res) => {
-  const {boardId} = req.params;
+  const { boardId } = req.params;
   const body = req.body;
   await moveTask(body);
   const tasks = await getAllTask(boardId);
   return res.status(200).send(tasks);
-});
-
-taskRoute.delete("/:taskId", async (req, res) => {
-  const taskId = req.params.taskId;
-
-  await deleteTask(taskId);
-  return res.status(200).send("Deleted successfully!");
 });
 
 module.exports = {

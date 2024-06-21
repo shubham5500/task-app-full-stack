@@ -6,8 +6,6 @@ const { getUserById } = require("../db/user.db");
 
 async function authorizedUser(req, res, next) {
   const token = req.cookies["token"];
-  // console.log('LOGGING', token);
-
   if (!token) {
     throw new ErrorHandler(401, "Token missing");
   }

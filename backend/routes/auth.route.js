@@ -37,8 +37,9 @@ authRoute.get("/logout", authorizedUser, (req, res) => {
   res.status(200).json({ message: "Logged out" });
 });
 
-authRoute.post("/login", async (req, res) => {
-  const body = req.body;
+authRoute.post("/login", async (req, res, next) => {
+  try {
+    const body = req.body;
   const password = body.password;
   if (!body.username && !body.email) {
     throw new ErrorHandler(
@@ -58,6 +59,9 @@ authRoute.post("/login", async (req, res) => {
   }
 
   const user = await getUserByKey(key, value);
+  if (!user) {
+    throw new ErrorHandler(404, 'User not found.')
+  }
 
   const isValid = await comparePassword(password, user.password);
   if (isValid) {
@@ -97,6 +101,9 @@ authRoute.post("/login", async (req, res) => {
     });
   } else {
     throw new ErrorHandler(403, "Invalid password");
+  }
+  } catch (error) {
+    next(error);
   }
 });
 

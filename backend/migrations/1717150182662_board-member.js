@@ -32,8 +32,10 @@ exports.up = (pgm) => {
       default: pgm.func("current_timestamp"),
     },
   });
+  
   pgm.addConstraint('board_members', 'unique_user_board', {
-    unique: ['user_id', 'board_id']
+    unique: ['user_id', 'board_id'] // this means that the combination of user_id and board_id 
+                                    // must be unique for every row.
   })
 };
 

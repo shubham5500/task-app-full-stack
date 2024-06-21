@@ -1,8 +1,8 @@
 const {
   createBoard,
   addUserToBoard,
-  getUsersByBoardId,
   getAllBoards,
+  getAllBoardsByUserId,
 } = require("../db/board.db");
 
 const express = require("express");
@@ -11,33 +11,42 @@ const {
   validateAddUserToBoard,
 } = require("../models/board.model");
 const { ErrorHandler } = require("../error/error.helper");
+const { authorizedUser } = require("../middleware/auth.middleware");
+const { getUsersByBoardId } = require("../db/user.db");
 
 const boardRoute = express.Router();
 
-boardRoute.get("/", async (req, res) => {
+boardRoute.get("/", authorizedUser, async (req, res) => {
   try {
-    const boards = await getAllBoards();
+    const { id } = req.user;
+    const boards = await getAllBoardsByUserId(id);
     if (!boards.length) {
       throw new ErrorHandler(203, "No data found");
     }
-    return res.status(200).send({boards});
+    return res.status(200).send({ boards });
   } catch (error) {
     throw new ErrorHandler(500, error);
   }
 });
 
-boardRoute.post("/create", async (req, res) => {
+boardRoute.post("/create", authorizedUser, async (req, res) => {
   const body = req.body;
+
   const validatedBoard = validateBoard(body);
 
   if (validatedBoard.error) {
     throw new Error(400, validatedBoard.error);
   }
 
-  await createBoard(body);
+  try {
+    await createBoard({...body, userId: req.user.id});
 
-  return res.status(200).send({message: "Board created successfully!"});
+    return res.status(200).send({ message: "Board created successfully!" });
+  } catch (error) {
+    next(error)
+  }
 });
+
 boardRoute.post("/add-user", async (req, res) => {
   if (validateAddUserToBoard(req.body).error) {
     throw new ErrorHandler(403, validateAddUserToBoard(req.body).error.message);
@@ -51,20 +60,18 @@ boardRoute.post("/add-user", async (req, res) => {
   }
 });
 
-boardRoute.get("/:boardId/users", async (req, res) => {
+boardRoute.get("/:boardId/users", async (req, res, next) => {
   const { boardId } = req.params;
-  if (validateAddUserToBoard(req.body).error) {
-    throw new ErrorHandler(403, validateAddUserToBoard(req.body).error.message);
-  }
 
   try {
-    const result = await getUsersByBoardId({ boardId });
-    if (!result.length) {
+    const result = await getUsersByBoardId(boardId);
+
+    if (result && !result.length) {
       throw new ErrorHandler(203, "No user found");
     }
-    return res.status(200).send({ result });
+    return res.status(200).send(result);
   } catch (error) {
-    throw new ErrorHandler(500, error);
+    next(error);
   }
 });
 

@@ -1,3 +1,4 @@
+const { ErrorHandler } = require("../error/error.helper");
 const { db } = require("./connection");
 
 const createTask = async ({
@@ -13,6 +14,7 @@ const createTask = async ({
 }) => {
   return db.tx(async (t) => {
     const tasks = await getAllTaskByListId(listId, t);
+    console.log({tasks});
     let position;
     if (tasks.length > 0) {
       position = tasks.length;
@@ -139,6 +141,14 @@ async function updateTaskById(body, taskId) {
   );
 }
 
+function assignTaskToUser(taskId, userId) {
+  try {
+    return db.one(`UPDATE tasks SET assigned_to = $1 WHERE id = $2 returning *`, [userId, taskId]);
+  } catch (error) {
+    throw new ErrorHandler(error)
+  }
+}
+
 async function moveTask(obj) {
   /*
     {
@@ -206,9 +216,13 @@ async function getAllTask(boardId) {
           t.created_at,
           t.position,
           t.list_id,
+          boards.id AS board_id,
           tc.comment_count
       FROM tasks t
+      JOIN lists ON t.list_id = lists.id
+      JOIN boards ON lists.board_id = boards.id
       LEFT JOIN task_comments tc ON t.id = tc.task_id
+      
   ),
   lists_with_tasks AS (
       SELECT
@@ -216,22 +230,23 @@ async function getAllTask(boardId) {
           l.title AS list_title,
           COALESCE(json_agg(
               json_build_object(
-                  'id', t.id,
-                  'title', t.title,
-                  'description', t.description,
-                  'status', t.status,
-                  'priority', t.priority,
-                  'due_date', t.due_date,
-                  'created_by', t.created_by,
-                  'assigned_to', t.assigned_to,
-                  'created_at', t.created_at,
-                  'position', t.position,
-                  'list_id', t.list_id,
-                  'comments', t.comment_count
+                  'id', twc.id,
+                  'title', twc.title,
+                  'description', twc.description,
+                  'status', twc.status,
+                  'priority', twc.priority,
+                  'due_date', twc.due_date,
+                  'created_by', twc.created_by,
+                  'assigned_to', twc.assigned_to,
+                  'created_at', twc.created_at,
+                  'position', twc.position,
+                  'list_id', twc.list_id,
+                  'comments', twc.comment_count,
+                  'board_id', twc.board_id
               )
-          ) FILTER (WHERE t.id IS NOT NULL), '[]') AS tasks
+          ) FILTER (WHERE twc.id IS NOT NULL), '[]') AS tasks
       FROM lists l
-      LEFT JOIN tasks_with_comments t ON t.list_id = l.id
+      LEFT JOIN tasks_with_comments twc ON twc.list_id = l.id
       WHERE l.board_id = $1  -- Ensure this matches the type of board_id in your database
       GROUP BY l.id, l.title
   )
@@ -270,6 +285,14 @@ async function commentOnTask(taskId, userId, commentData) {
   // return await getTaskDetailById(taskId);
 }
 
+async function getAssignedTask(userId) {
+  return db.manyOrNone(`
+    SELECT tasks.*, lists.id as list_id, lists.title as list_title, board_id FROM tasks
+    JOIN lists ON lists.id = tasks.list_id
+    WHERE assigned_to = $1
+  `, [userId])
+}
+
 module.exports = {
   createTask,
   getTaskDetailById,
@@ -278,4 +301,6 @@ module.exports = {
   deleteTask,
   getAllTask,
   commentOnTask,
+  assignTaskToUser,
+  getAssignedTask,
 };
