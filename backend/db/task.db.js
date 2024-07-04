@@ -14,7 +14,6 @@ const createTask = async ({
 }) => {
   return db.tx(async (t) => {
     const tasks = await getAllTaskByListId(listId, t);
-    console.log({tasks});
     let position;
     if (tasks.length > 0) {
       position = tasks.length;
@@ -216,6 +215,7 @@ async function getAllTask(boardId) {
           t.created_at,
           t.position,
           t.list_id,
+          lists.title as list_title,
           boards.id AS board_id,
           tc.comment_count
       FROM tasks t
@@ -241,6 +241,7 @@ async function getAllTask(boardId) {
                   'created_at', twc.created_at,
                   'position', twc.position,
                   'list_id', twc.list_id,
+                  'list_title', twc.list_title,
                   'comments', twc.comment_count,
                   'board_id', twc.board_id
               )

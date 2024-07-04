@@ -20,9 +20,6 @@ userRoute.get("/", authorizedUser, async (req, res) => {
     if (!users.length) {
       throw new ErrorHandler(204, "No users found");
     }
-    res.cookie("some-cookie", "SHubham", {
-      maxAge: 40000000,
-    });
     return res.status(200).send(users);
   } catch (error) {}
   return res.send("Hello");

@@ -34,7 +34,7 @@ const upload = multer({
     s3,
     bucket: "new-free-bucket",
     metadata: function (req, file, cb) {
-      console.log({ req });
+      // console.log({ req });
       cb(null, file.filename);
     },
     key: function (req, file, cb) {
@@ -106,7 +106,7 @@ taskRoute.post(
       createdBy: req.user.id,
       listId,
     });
-    
+
     return res.status(200).send(result);
   }
 );
@@ -140,22 +140,20 @@ taskRoute
       priority,
       assignedTo,
       position,
-      listId,
-    } = body;
+    } = req.body;
 
-    const validatedTask = validateTask({
-      title,
-      description,
-      status,
-      priority,
-      assignedTo,
-      position,
-      listId,
-    });
+    // const validatedTask = validateTask({
+    //   title,
+    //   description,
+    //   status,
+    //   priority,
+    //   assignedTo,
+    //   position,
+    // });
 
-    if (validatedTask.error) {
-      throw new ErrorHandler(400, validatedTask.error);
-    }
+    // if (validatedTask.error) {
+    //   throw new ErrorHandler(400, validatedTask.error);
+    // }
 
     await updateTaskById(req.body, taskId);
     return res.status(200).send(req.body);

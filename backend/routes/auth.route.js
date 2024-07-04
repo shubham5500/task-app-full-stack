@@ -30,7 +30,7 @@ authRoute.post("/register", async (req, res, next) => {
   return res.status(200).send(resObj);
 });
 
-authRoute.get("/logout", authorizedUser, (req, res) => {
+authRoute.get("/logout", (req, res) => {
   const { id } = req.user;
   res.clearCookie("token");
   res.clearCookie("refreshToken");

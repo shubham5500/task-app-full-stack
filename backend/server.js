@@ -22,6 +22,12 @@ const { listRoute } = require("./routes/list.route");
 const { boardRoute } = require("./routes/board.route");
 const app = express();
 
+process.on('uncaughtException', function (err) {       
+  console.log(err);
+  //Send some notification about the error  
+  process.exit(1);
+});
+
 app.use(express.json());
 const corsOptions = {
   origin: "http://localhost:3001", // or this could be a specific list or match patterns

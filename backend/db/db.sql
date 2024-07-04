@@ -48,5 +48,5 @@ create table task_files (
     uploaded_at timestamp default current_timestamp
 );
 
-alter table task_files  drop column task_id;
-alter table task_files add column task_id integer references tasks(id) on delete cascade;
+-- alter table task_files  drop column task_id;
+-- alter table task_files add column task_id integer references tasks(id) on delete cascade;
