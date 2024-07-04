@@ -78,7 +78,6 @@ const CardDetail = ({ data }) => {
   };
 
   const assign = async () => {
-    console.log(assignedUser);
     try {
       const result = await customFetch(`/tasks/${taskData?.id}/assign`, "POST", {
         assignToId: assignedUser,

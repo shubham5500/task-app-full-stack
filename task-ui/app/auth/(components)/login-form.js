@@ -19,6 +19,8 @@ export const LoginForm = () => {
         toast(result?.message);
         return;
       }
+
+      LocalStorageService.setItem('user', result);
       
       router.push("/board");
     } catch (error) {

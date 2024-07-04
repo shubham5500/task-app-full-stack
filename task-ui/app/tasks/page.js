@@ -10,6 +10,7 @@ export const getTasks = async () => {
     headers: {
       cookie: cookies(),
     },
+    cache: 'no-store'
   });
   return await r.json();
 };

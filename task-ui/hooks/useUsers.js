@@ -8,8 +8,18 @@ export default function useUsers(boardId) {
 
     setUsers(results || []);
   };
+
+  const getAllUsers = async () => {
+    const results = await customFetch(`/users`, "GET");
+
+    setUsers(results || []);
+  };
   useEffect(() => {
+   if (boardId !== 'all') {
     getUserByBoardId()
+   } else if (boardId === 'all') {
+    getAllUsers();
+   }
   }, [boardId]);
 
   return { users };

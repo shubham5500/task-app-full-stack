@@ -10,7 +10,6 @@ export const RegisterForm = ({setIsLogin}) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ name, username, email, password });
     // Add registration logic here
     try {
       await customFetch("/auth/register", "POST", {

@@ -7,41 +7,37 @@ import Button from "./UI/Button";
 
 const List = ({ listItem, listKey, addTask, boardId }) => {
   const [input, setInput] = useState("");
-  useEffect(() => {
-    console.log({listItem});
-  }, [listItem])
-
   return (
     <div className="w-[300px]">
-      {/* {listItem[listKey].title} */}
       <Droppable droppableId={`${listKey}`}>
         {(provided, snapshot) => (
           <div className="bg-blue-500 rounded m-3">
+            {listItem && listItem.length > 0 && <div className="p-3 text-lg capitalize bg-gray-200 text-gray-900 rounded-t">{listItem[0].list_title}</div>}
             <div ref={provided.innerRef} className={"pt-1"}>
-              {listItem && listItem.length > 0 && listItem?.map((taskItem, i) => (
-                <Draggable
-                  key={taskItem?.id}
-                  draggableId={taskItem?.id.toString()}
-                  index={i}
-                >
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className="px-2 py-1"
-                      // style={getItemStyle(
-                      //   snapshot.isDragging,
-                      //   provided.draggableProps.style
-                      // )}
-                    >
-                      <TaskCard
-                        taskData={taskItem}
-                      />
-                    </div>
-                  )}
-                </Draggable>
-              ))}
+              {listItem &&
+                listItem.length > 0 &&
+                listItem?.map((taskItem, i) => (
+                  <Draggable
+                    key={taskItem?.id}
+                    draggableId={taskItem?.id.toString()}
+                    index={i}
+                  >
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        className="px-2 py-1"
+                        // style={getItemStyle(
+                        //   snapshot.isDragging,
+                        //   provided.draggableProps.style
+                        // )}
+                      >
+                        <TaskCard taskData={taskItem} />
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
               {provided.placeholder}
             </div>
             <div className="flex p-2">

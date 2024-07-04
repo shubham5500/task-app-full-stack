@@ -20,6 +20,15 @@ function normalizeList(listData = []) {
   return obj;
 }
 
+const getListName = (lists) => {
+  const obj = {};
+
+  lists.map((item) => {
+    obj[item.list_id] = item.list_title;
+  });
+  return obj;
+};
+
 function getTaskMovePayload(lists) {
   const payload = {};
   Object.entries(lists).forEach(([key, value]) => {
@@ -39,6 +48,7 @@ async function callMoveApi(payload, boardId) {
 
 const Board = () => {
   const [lists, setLists] = useState({});
+  const [listNames, setListNames] = useState({});
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const { boardId } = useParams();
@@ -79,11 +89,7 @@ const Board = () => {
     });
     setLists({
       ...lists,
-      [result.id]: {
-        id: result.id,
-        title: result.title,
-        tasks: [],
-      },
+      [result.id]: [],
     });
   };
 
@@ -123,12 +129,18 @@ const Board = () => {
       priority: "medium",
       listId: parseInt(listKey),
     });
-    console.log({ result, lists });
-    // callGetAllTasks();
-    setLists({
-      ...lists,
-      [listKey]: [...lists[listKey], {...result}],
-    })
+    if (isEmpty(lists) || !lists[result.list_id]) {
+      setLists({
+        ...lists,
+        [result.list_id]: [{ ...result }],
+      });
+    } else {
+      // console.log({lists});
+      setLists({
+        ...lists,
+        [result.list_id]: [...lists[result.list_id], { ...result }],
+      });
+    }
   };
 
   if (loading) {
@@ -147,7 +159,7 @@ const Board = () => {
       </div>
     );
   }
-
+  console.log({ lists });
   return (
     <div style={{ display: "flex" }}>
       <DragDropContext onDragEnd={onDragEnd}>

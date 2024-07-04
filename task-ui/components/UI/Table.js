@@ -2,7 +2,7 @@
 import React from "react";
 
 const Table = ({ columns = [], data = [] }) => {
-  if (data.length) {
+  if (!data.length) {
     return <p>No data found...</p>
   }
   return (
