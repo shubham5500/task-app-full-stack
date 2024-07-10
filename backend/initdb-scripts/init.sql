@@ -1,8 +1,8 @@
-CREATE DATABASE IF NOT EXISTS task_management;
+-- CREATE database task_management;
 
-\ c task_management;
+\c task_management;
 
-create table if not EXISTS if not EXISTS users (
+create table users (
     id serial primary key,
     name varchar(255),
     username varchar(255) unique not null,
@@ -11,12 +11,12 @@ create table if not EXISTS if not EXISTS users (
     role varchar(255) default 'user'
 );
 
-create table if not EXISTS boards (
+create table boards (
     id serial primary key,
     title varchar(255) not null
 );
 
-create table if not EXISTS lists (
+create table lists (
     id serial primary key,
     title varchar(255) not null,
     board_id integer references boards(id) not null
@@ -26,7 +26,7 @@ create type TASK_STATUS as enum ('pending', 'completed', 'in_progess');
 
 create type TASK_PRIORITY as enum ('low', 'medium', 'high');
 
-create table if not EXISTS tasks (
+create table tasks (
     id serial primary key,
     title varchar(255) not null,
     description text,
@@ -40,7 +40,7 @@ create table if not EXISTS tasks (
     position integer default 0
 );
 
-create table if not EXISTS task_files (
+create table task_files (
     id serial primary key,
     task_id integer references tasks(id) on delete cascade,
     file_url text,

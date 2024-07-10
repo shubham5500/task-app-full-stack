@@ -13,7 +13,7 @@ const { omit } = require("lodash");
 const userRoute = require("express").Router();
 
 // all users
-userRoute.get("/", authorizedUser, async (req, res) => {
+userRoute.get("/", authorizedUser, async (req, res, next) => {
   try {
     const users = await getAllUsers();
 
@@ -21,8 +21,9 @@ userRoute.get("/", authorizedUser, async (req, res) => {
       throw new ErrorHandler(204, "No users found");
     }
     return res.status(200).send(users);
-  } catch (error) {}
-  return res.send("Hello");
+  } catch (error) {
+    next(error)
+  }
 });
 
 // userRoute.post("/board", async (req, res) => {
@@ -42,6 +43,7 @@ userRoute.get("/", authorizedUser, async (req, res) => {
 
 userRoute.get(
   "/:id",
+  // [authorizedUser, userCacheMiddleware],
   [authorizedUser, userCacheMiddleware],
   async (req, res, next) => {
     try {

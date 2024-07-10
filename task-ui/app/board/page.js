@@ -1,13 +1,12 @@
 import React from "react";
 import { IoIosAddCircle } from "react-icons/io";
 import Link from "next/link";
-import { BASE_URL } from "@/utils/helper";
 import { cookies } from "next/headers";
 import { MdSpaceDashboard } from "react-icons/md";
 import AddBoard from "./(components)/AddBoard";
-
+import { server_url } from "@/utils/helper";
 export async function getBoards() {
-  return fetch(`${BASE_URL}/board`, {
+  return fetch(`${server_url}/board`, {
     method: "GET",
     headers: {
       cookie: cookies(), // this cookies function sends the cookies from the 

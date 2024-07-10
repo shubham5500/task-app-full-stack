@@ -1,5 +1,5 @@
 
-import {customFetch} from '../utils/helper'
+import {customFetch, server_url} from '../utils/helper'
 
 export async function updateTaskById(taskId, data) {
     return customFetch(`/tasks/${taskId}`, 'PATCH', data,);
@@ -16,7 +16,7 @@ export async function postCommentOnTask(taskId, commentData) {
 
 export async function getTask() {
     const token = cookies().get('token').value;
-    return fetch(`${BASE_URL}/tasks`, {
+    return fetch(`${server_url}/tasks`, {
       method: "GET",
       headers: {
         "auth-token": token,

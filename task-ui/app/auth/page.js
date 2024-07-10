@@ -2,12 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import { LoginForm } from './(components)/login-form';
 import { RegisterForm } from './(components)/register-form';
-
+console.log('/////////////////////////');
 const AuthPage = () => {
     const [isLogin, setIsLogin] = useState('');
 
     useEffect(() => {
         setIsLogin('LOGIN')
+console.log('/////////////////////////');
+
     }, [])
 
     return (

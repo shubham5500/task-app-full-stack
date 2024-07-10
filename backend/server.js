@@ -2,7 +2,7 @@ require("dotenv").config({
   path:
     process.env.NODE_ENV === "development"
       ? ".env.development"
-      : "production.env",
+      : ".env.production",
 });
 const express = require("express");
 const morgan = require("morgan");
@@ -27,10 +27,10 @@ process.on('uncaughtException', function (err) {
   //Send some notification about the error  
   process.exit(1);
 });
-
+console.log('llllll///////////////////');
 app.use(express.json());
 const corsOptions = {
-  origin: "http://localhost:3001", // or this could be a specific list or match patterns
+  origin: "http://localhost:8080", // or this could be a specific list or match patterns
   credentials: true, // Allow cookies and credentials to be sent along
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
@@ -48,5 +48,7 @@ app.use("/tasks", authorizedUser, taskRoute);
 app.use(handlerError);
 
 app.listen(APP_PORT, () => {
-  console.log("CONNECTED ON PORT: ", APP_PORT);
+console.log('llllll///////////////////');
+
+  console.log("CONNECTED ON PORT:", APP_PORT);
 });

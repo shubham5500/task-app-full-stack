@@ -1,7 +1,9 @@
 import { LocalStorageService } from "@/services/localStorage.service";
 import { toast } from "react-toastify";
 
-export const BASE_URL = "http://localhost:3000";
+export const client_url = process.env.CLIENT_URL || "http://localhost:3000";
+export const server_url = "http://backend-app:3000";
+// console.log({client_url, server_url});
 const ISSERVER = typeof window === "undefined";
 
 export function getHeaders(method = "GET") {
@@ -19,7 +21,7 @@ export async function customFetch(url, method = "GET", data = {}) {
   if (method !== "GET") {
     obj["body"] = JSON.stringify(data);
   }
-  const res = await fetch(`${BASE_URL}${url}`, {
+  const res = await fetch(`${client_url}${url}`, {
     ...getHeaders(method),
     ...obj,
   });

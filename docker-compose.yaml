@@ -1,0 +1,76 @@
+version: '3.9'
+services:
+  backend-app:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile  
+    
+    # command: "npm run migrate up"
+    
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+
+    ports:
+      - 3000:3000
+    depends_on:
+      - redis
+      - db
+    restart: always
+    
+  db:
+    image: postgres:15.6
+    restart: always
+    shm_size: 128mb
+    volumes:
+      - ./backend/initdb-scripts:/docker-entrypoint-initdb.d
+      - ./backend/postgres-data:/var/lib/postgres/data
+
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=task_management
+    ports:
+      - "5433:5432" 
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - 6379:6379
+    restart: always
+    shm_size: 128mb
+
+  task-frontend:
+    build:
+      context: ./task-ui
+      dockerfile: Dockerfile
+    
+    # environment:
+    #   - SERVER_URL=http://backend-app:3000
+    #   - CLIENT_URL=http://localhost:3000
+    
+    volumes:
+      - ./task-ui:/usr/src/task-fe
+      - /usr/src/task-fe/node_modules
+    ports:
+      - 8080:8080
+
+  migration:
+    build:
+      context: ./backend
+    command:
+      [
+        "./wait-for-it.sh",
+        "db:5432",
+        "--",
+        "npm",
+        "run",
+        "migrate",
+        "up"
+      ]
+    links:
+      - db
+    depends_on:
+      - db
+    # environment:
+    # - DATABASE_URL=postgres://postgres:admin@db:5432/task_management
